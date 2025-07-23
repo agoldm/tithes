@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:intl/intl.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:responsive_framework/responsive_framework.dart';
+import 'package:tithes/core/services/currency_service.dart';
+import 'package:tithes/presentation/bloc/currency/currency_bloc.dart';
+import 'package:tithes/presentation/bloc/currency/currency_state.dart';
 import 'package:tithes/core/extensions/date_extensions.dart';
 import 'package:tithes/data/models/income.dart';
 import 'package:tithes/data/models/category.dart';
@@ -33,7 +36,7 @@ class _IncomePageState extends State<IncomePage> {
     
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Income'),
+        title: Text('income'.tr()),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
@@ -74,48 +77,53 @@ class _IncomePageState extends State<IncomePage> {
   }
 
   Widget _buildSummaryRow(BuildContext context, IncomeLoaded state) {
-    final currencyFormat = NumberFormat.currency(symbol: '\$', decimalDigits: 2);
     final maaserAmount = state.monthlyIncome * 0.1;
     
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            Column(
+    return BlocBuilder<CurrencyBloc, CurrencyState>(
+      builder: (context, currencyState) {
+        final currencyService = CurrencyService.instance;
+        
+        return Card(
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                Text(
-                  'Total Income',
-                  style: Theme.of(context).textTheme.titleSmall,
+                Column(
+                  children: [
+                    Text(
+                      'total_income'.tr(),
+                      style: Theme.of(context).textTheme.titleSmall,
+                    ),
+                    Text(
+                      currencyService.formatAmount(state.monthlyIncome),
+                      style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                        color: Colors.green,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
                 ),
-                Text(
-                  currencyFormat.format(state.monthlyIncome),
-                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                    color: Colors.green,
-                    fontWeight: FontWeight.bold,
-                  ),
+                Column(
+                  children: [
+                    Text(
+                      'maaser_10'.tr(),
+                      style: Theme.of(context).textTheme.titleSmall,
+                    ),
+                    Text(
+                      currencyService.formatAmount(maaserAmount),
+                      style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                        color: Colors.blue,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
-            Column(
-              children: [
-                Text(
-                  'Maaser (10%)',
-                  style: Theme.of(context).textTheme.titleSmall,
-                ),
-                Text(
-                  currencyFormat.format(maaserAmount),
-                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                    color: Colors.blue,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 
@@ -124,9 +132,9 @@ class _IncomePageState extends State<IncomePage> {
       return const Center(child: CircularProgressIndicator());
     } else if (state is IncomeLoaded) {
       if (state.filteredIncomes.isEmpty) {
-        return const Center(
+        return Center(
           child: Text(
-            'No income records found.\nTap + to add your first income.',
+            'no_income_records'.tr(),
             textAlign: TextAlign.center,
           ),
         );
@@ -138,18 +146,18 @@ class _IncomePageState extends State<IncomePage> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text(
-              'Error: ${state.message}',
+              '${'error'.tr()}: ${state.message}',
               style: TextStyle(color: Theme.of(context).colorScheme.error),
             ),
             ElevatedButton(
               onPressed: () => context.read<IncomeBloc>().add(LoadIncomes()),
-              child: const Text('Retry'),
+              child: Text('retry'.tr()),
             ),
           ],
         ),
       );
     } else {
-      return const Center(child: Text('Welcome! Add your first income record.'));
+      return Center(child: Text('welcome_income'.tr()));
     }
   }
 
@@ -169,7 +177,7 @@ class _IncomePageState extends State<IncomePage> {
               (c) => c.id == income.categoryId,
               orElse: () => Category(
                 id: income.categoryId,
-                name: 'Unknown Category',
+                name: 'unknown_category'.tr(),
                 type: CategoryType.income,
               ),
             );
@@ -182,23 +190,26 @@ class _IncomePageState extends State<IncomePage> {
   }
 
   Widget _buildIncomeListItem(BuildContext context, Income income, Category category) {
-    final currencyFormat = NumberFormat.currency(symbol: '\$', decimalDigits: 2);
     final dateFormat = DateFormat('MMM dd, yyyy');
     
-    return Card(
-      margin: const EdgeInsets.symmetric(vertical: 4),
-      child: ListTile(
-        leading: CircleAvatar(
-          backgroundColor: Theme.of(context).colorScheme.primaryContainer,
-          child: Icon(
-            Icons.trending_up,
-            color: Theme.of(context).colorScheme.onPrimaryContainer,
-          ),
-        ),
-        title: Text(
-          currencyFormat.format(income.amount),
-          style: const TextStyle(fontWeight: FontWeight.bold),
-        ),
+    return BlocBuilder<CurrencyBloc, CurrencyState>(
+      builder: (context, currencyState) {
+        final currencyService = CurrencyService.instance;
+        
+        return Card(
+          margin: const EdgeInsets.symmetric(vertical: 4),
+          child: ListTile(
+            leading: CircleAvatar(
+              backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+              child: Icon(
+                Icons.trending_up,
+                color: Theme.of(context).colorScheme.onPrimaryContainer,
+              ),
+            ),
+            title: Text(
+              currencyService.formatAmount(income.amount),
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -211,20 +222,22 @@ class _IncomePageState extends State<IncomePage> {
               ),
           ],
         ),
-        trailing: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            IconButton(
-              icon: const Icon(Icons.edit),
-              onPressed: () => _showIncomeForm(context, income),
+            trailing: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.edit),
+                  onPressed: () => _showIncomeForm(context, income),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.delete),
+                  onPressed: () => _confirmDelete(context, income),
+                ),
+              ],
             ),
-            IconButton(
-              icon: const Icon(Icons.delete),
-              onPressed: () => _confirmDelete(context, income),
-            ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 
@@ -239,19 +252,19 @@ class _IncomePageState extends State<IncomePage> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Delete Income'),
-        content: const Text('Are you sure you want to delete this income record?'),
+        title: Text('delete_income'.tr()),
+        content: Text('delete_income_confirmation'.tr()),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cancel'),
+            child: Text('cancel'.tr()),
           ),
           TextButton(
             onPressed: () {
               context.read<IncomeBloc>().add(DeleteIncome(income.id));
               Navigator.of(context).pop();
             },
-            child: const Text('Delete'),
+            child: Text('delete'.tr()),
           ),
         ],
       ),

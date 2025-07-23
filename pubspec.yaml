@@ -48,6 +48,12 @@ dependencies:
   
   # Responsive design
   responsive_framework: ^1.5.1
+  
+  # Internationalization
+  easy_localization: ^3.0.7
+  
+  # Local storage for settings
+  shared_preferences: ^2.2.3
 
 dev_dependencies:
   flutter_test:
@@ -76,9 +82,8 @@ flutter:
   uses-material-design: true
 
   # To add assets to your application, add an assets section, like this:
-  # assets:
-  #   - images/a_dot_burr.jpeg
-  #   - images/a_dot_ham.jpeg
+  assets:
+    - assets/translations/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

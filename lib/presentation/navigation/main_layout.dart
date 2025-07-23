@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:responsive_framework/responsive_framework.dart';
 import 'package:tithes/presentation/pages/home_page.dart';
 import 'package:tithes/presentation/pages/income_page.dart';
@@ -20,39 +21,39 @@ class _MainLayoutState extends State<MainLayout> {
     DonationsPage(),
   ];
 
-  final List<NavigationDestination> _destinations = const [
+  List<NavigationDestination> get _destinations => [
     NavigationDestination(
-      icon: Icon(Icons.home_outlined),
-      selectedIcon: Icon(Icons.home),
-      label: 'Home',
+      icon: const Icon(Icons.home_outlined),
+      selectedIcon: const Icon(Icons.home),
+      label: 'home'.tr(),
     ),
     NavigationDestination(
-      icon: Icon(Icons.trending_up_outlined),
-      selectedIcon: Icon(Icons.trending_up),
-      label: 'Income',
+      icon: const Icon(Icons.trending_up_outlined),
+      selectedIcon: const Icon(Icons.trending_up),
+      label: 'income'.tr(),
     ),
     NavigationDestination(
-      icon: Icon(Icons.volunteer_activism_outlined),
-      selectedIcon: Icon(Icons.volunteer_activism),
-      label: 'Donations',
+      icon: const Icon(Icons.volunteer_activism_outlined),
+      selectedIcon: const Icon(Icons.volunteer_activism),
+      label: 'donations'.tr(),
     ),
   ];
 
-  final List<NavigationRailDestination> _railDestinations = const [
+  List<NavigationRailDestination> get _railDestinations => [
     NavigationRailDestination(
-      icon: Icon(Icons.home_outlined),
-      selectedIcon: Icon(Icons.home),
-      label: Text('Home'),
+      icon: const Icon(Icons.home_outlined),
+      selectedIcon: const Icon(Icons.home),
+      label: Text('home'.tr()),
     ),
     NavigationRailDestination(
-      icon: Icon(Icons.trending_up_outlined),
-      selectedIcon: Icon(Icons.trending_up),
-      label: Text('Income'),
+      icon: const Icon(Icons.trending_up_outlined),
+      selectedIcon: const Icon(Icons.trending_up),
+      label: Text('income'.tr()),
     ),
     NavigationRailDestination(
-      icon: Icon(Icons.volunteer_activism_outlined),
-      selectedIcon: Icon(Icons.volunteer_activism),
-      label: Text('Donations'),
+      icon: const Icon(Icons.volunteer_activism_outlined),
+      selectedIcon: const Icon(Icons.volunteer_activism),
+      label: Text('donations'.tr()),
     ),
   ];
 

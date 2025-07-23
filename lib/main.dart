@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:responsive_framework/responsive_framework.dart';
 import 'package:tithes/core/theme/app_theme.dart';
+import 'package:tithes/core/services/currency_service.dart';
 import 'package:tithes/data/datasources/local_data_source.dart';
 import 'package:tithes/data/repositories/income_repository_impl.dart';
 import 'package:tithes/data/repositories/donation_repository_impl.dart';
@@ -12,14 +14,28 @@ import 'package:tithes/presentation/bloc/income/income_bloc.dart';
 import 'package:tithes/presentation/bloc/donation/donation_bloc.dart';
 import 'package:tithes/presentation/bloc/category/category_bloc.dart';
 import 'package:tithes/presentation/bloc/category/category_event.dart';
+import 'package:tithes/presentation/bloc/currency/currency_bloc.dart';
+import 'package:tithes/presentation/bloc/currency/currency_event.dart';
 import 'package:tithes/presentation/navigation/main_layout.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await EasyLocalization.ensureInitialized();
   
   await LocalDataSource.initialize();
+  await CurrencyService.instance.initialize();
   
-  runApp(const MaaserApp());
+  runApp(
+    EasyLocalization(
+      supportedLocales: const [
+        Locale('en'),
+        Locale('he'),
+      ],
+      path: 'assets/translations',
+      fallbackLocale: const Locale('en'),
+      child: const MaaserApp(),
+    ),
+  );
 }
 
 class MaaserApp extends StatelessWidget {
@@ -45,6 +61,11 @@ class MaaserApp extends StatelessWidget {
           ),
         ),
         BlocProvider(
+          create: (context) => CurrencyBloc(
+            currencyService: CurrencyService.instance,
+          )..add(LoadCurrency()),
+        ),
+        BlocProvider(
           create: (context) => HomeBloc(
             incomeRepository: IncomeRepositoryImpl(),
             donationRepository: DonationRepositoryImpl(),
@@ -52,9 +73,12 @@ class MaaserApp extends StatelessWidget {
         ),
       ],
       child: MaterialApp(
-        title: 'Maaser Tracker',
+        title: 'app_title'.tr(),
         theme: AppTheme.lightTheme,
         darkTheme: AppTheme.darkTheme,
+        localizationsDelegates: context.localizationDelegates,
+        supportedLocales: context.supportedLocales,
+        locale: context.locale,
         home: ResponsiveBreakpoints.builder(
           child: const MainLayout(),
           breakpoints: [
