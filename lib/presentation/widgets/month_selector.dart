@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:tithes/core/extensions/date_extensions.dart';
 
 class MonthSelector extends StatefulWidget {
@@ -34,7 +35,7 @@ class _MonthSelectorState extends State<MonthSelector> {
                   child: Padding(
                     padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
                     child: Text(
-                      _selectedMonth.displayMonth,
+                      DateFormat.yMMMM(context.locale.languageCode).format(_selectedMonth),
                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.bold,
                       ),
@@ -71,6 +72,7 @@ class _MonthSelectorState extends State<MonthSelector> {
     final now = DateTime.now();
     final result = await showDatePicker(
       context: context,
+      locale: context.locale,
       initialDate: _selectedMonth,
       firstDate: DateTime(now.year - 5),
       lastDate: DateTime(now.year + 1),

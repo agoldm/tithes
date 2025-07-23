@@ -188,7 +188,7 @@ class _DonationsPageState extends State<DonationsPage> {
   }
 
   Widget _buildDonationListItem(BuildContext context, Donation donation, Category category) {
-    final dateFormat = DateFormat('MMM dd, yyyy');
+    final dateFormat = DateFormat.yMMMd(context.locale.languageCode);
     
     return BlocBuilder<CurrencyBloc, CurrencyState>(
       builder: (context, currencyState) {
@@ -211,7 +211,7 @@ class _DonationsPageState extends State<DonationsPage> {
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(category.name),
+            Text('donation_categories.${category.name}'.tr()),
             Text(dateFormat.format(donation.date)),
             if (donation.description?.isNotEmpty == true)
               Text(

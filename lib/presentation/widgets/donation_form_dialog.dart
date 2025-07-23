@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:intl/intl.dart';
+import 'package:easy_localization/easy_localization.dart';
+import 'package:tithes/core/services/currency_service.dart';
+import 'package:tithes/presentation/bloc/currency/currency_bloc.dart';
+import 'package:tithes/presentation/bloc/currency/currency_state.dart';
 import 'package:tithes/data/models/donation.dart';
 import 'package:tithes/data/models/category.dart';
 import 'package:tithes/presentation/bloc/donation/donation_bloc.dart';
@@ -48,7 +51,7 @@ class _DonationFormDialogState extends State<DonationFormDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text(widget.donation == null ? 'Add Donation' : 'Edit Donation'),
+      title: Text(widget.donation == null ? 'add_donation'.tr() : 'edit_donation'.tr()),
       content: SizedBox(
         width: MediaQuery.of(context).size.width * 0.9,
         child: SingleChildScrollView(
@@ -57,25 +60,30 @@ class _DonationFormDialogState extends State<DonationFormDialog> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                TextFormField(
-                  controller: _amountController,
-                  decoration: const InputDecoration(
-                    labelText: 'Amount *',
-                    prefixText: '\$ ',
-                  ),
+                BlocBuilder<CurrencyBloc, CurrencyState>(
+                  builder: (context, currencyState) {
+                    final currencyService = CurrencyService.instance;
+                    return TextFormField(
+                      controller: _amountController,
+                      decoration: InputDecoration(
+                        labelText: '${'amount'.tr()} *',
+                        prefixText: '${currencyService.currencySymbol} ',
+                      ),
                   keyboardType: const TextInputType.numberWithOptions(decimal: true),
                   inputFormatters: [
                     FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,2}')),
                   ],
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter an amount';
-                    }
-                    final amount = double.tryParse(value);
-                    if (amount == null || amount <= 0) {
-                      return 'Please enter a valid amount greater than 0';
-                    }
-                    return null;
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'amount_required'.tr();
+                        }
+                        final amount = double.tryParse(value);
+                        if (amount == null || amount <= 0) {
+                          return 'amount_invalid'.tr();
+                        }
+                        return null;
+                      },
+                    );
                   },
                 ),
                 const SizedBox(height: 16),
@@ -84,18 +92,18 @@ class _DonationFormDialogState extends State<DonationFormDialog> {
                     if (state is CategoryLoaded) {
                       final categories = state.donationCategories;
                       if (categories.isEmpty) {
-                        return const Text('No donation categories available');
+                        return Text('no_donation_categories'.tr());
                       }
                       
                       return DropdownButtonFormField<String>(
                         value: _selectedCategoryId,
-                        decoration: const InputDecoration(
-                          labelText: 'Category *',
+                        decoration: InputDecoration(
+                          labelText: '${'category'.tr()} *',
                         ),
                         items: categories.map((category) {
                           return DropdownMenuItem(
                             value: category.id,
-                            child: Text(category.name),
+                            child: Text('donation_categories.${category.name}'.tr()),
                           );
                         }).toList(),
                         onChanged: (value) {
@@ -105,7 +113,7 @@ class _DonationFormDialogState extends State<DonationFormDialog> {
                         },
                         validator: (value) {
                           if (value == null || value.isEmpty) {
-                            return 'Please select a category';
+                            return 'category_required'.tr();
                           }
                           return null;
                         },
@@ -116,8 +124,8 @@ class _DonationFormDialogState extends State<DonationFormDialog> {
                 ),
                 const SizedBox(height: 16),
                 ListTile(
-                  title: const Text('Date'),
-                  subtitle: Text(DateFormat('MMM dd, yyyy').format(_selectedDate)),
+                  title: Text('date'.tr()),
+                  subtitle: Text(DateFormat.yMMMd(context.locale.languageCode).format(_selectedDate)),
                   trailing: const Icon(Icons.calendar_today),
                   onTap: _selectDate,
                   contentPadding: EdgeInsets.zero,
@@ -125,8 +133,8 @@ class _DonationFormDialogState extends State<DonationFormDialog> {
                 const SizedBox(height: 16),
                 TextFormField(
                   controller: _descriptionController,
-                  decoration: const InputDecoration(
-                    labelText: 'Description (optional)',
+                  decoration: InputDecoration(
+                    labelText: 'description'.tr(),
                   ),
                   maxLines: 3,
                   maxLength: 200,
@@ -139,7 +147,7 @@ class _DonationFormDialogState extends State<DonationFormDialog> {
       actions: [
         TextButton(
           onPressed: _isSubmitting ? null : () => Navigator.of(context).pop(),
-          child: const Text('Cancel'),
+          child: Text('cancel'.tr()),
         ),
         ElevatedButton(
           onPressed: _isSubmitting ? null : _submitForm,
@@ -149,7 +157,7 @@ class _DonationFormDialogState extends State<DonationFormDialog> {
                   height: 20,
                   child: CircularProgressIndicator(strokeWidth: 2),
                 )
-              : Text(widget.donation == null ? 'Add' : 'Save'),
+              : Text(widget.donation == null ? 'add'.tr() : 'save'.tr()),
         ),
       ],
     );
@@ -158,6 +166,7 @@ class _DonationFormDialogState extends State<DonationFormDialog> {
   Future<void> _selectDate() async {
     final picked = await showDatePicker(
       context: context,
+      locale: context.locale,
       initialDate: _selectedDate,
       firstDate: DateTime.now().subtract(const Duration(days: 365 * 5)),
       lastDate: DateTime.now().add(const Duration(days: 365)),

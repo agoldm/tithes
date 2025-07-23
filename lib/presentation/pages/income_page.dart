@@ -190,7 +190,7 @@ class _IncomePageState extends State<IncomePage> {
   }
 
   Widget _buildIncomeListItem(BuildContext context, Income income, Category category) {
-    final dateFormat = DateFormat('MMM dd, yyyy');
+    final dateFormat = DateFormat.yMMMd(context.locale.languageCode);
     
     return BlocBuilder<CurrencyBloc, CurrencyState>(
       builder: (context, currencyState) {
@@ -213,7 +213,7 @@ class _IncomePageState extends State<IncomePage> {
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(category.name),
+            Text('income_categories.${category.name}'.tr()),
             Text(dateFormat.format(income.date)),
             if (income.description?.isNotEmpty == true)
               Text(

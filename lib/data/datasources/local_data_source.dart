@@ -26,25 +26,67 @@ class LocalDataSource {
   static Future<void> _initializeDefaultCategories() async {
     final categoryBox = Hive.box<Category>(AppConstants.categoryBoxName);
     
-    if (categoryBox.isEmpty) {
-      // Add default income categories
-      for (int i = 0; i < AppConstants.defaultIncomeCategories.length; i++) {
-        final category = Category(
-          id: 'income_${i + 1}',
-          name: AppConstants.defaultIncomeCategories[i],
-          type: CategoryType.income,
+    // Force recreate categories to ensure they use translation keys
+    await _recreateCategories();
+  }
+  
+  static Future<void> _recreateCategories() async {
+    final categoryBox = Hive.box<Category>(AppConstants.categoryBoxName);
+    
+    // Clear all existing categories
+    await categoryBox.clear();
+    
+    // Add default income categories with translation keys
+    for (int i = 0; i < AppConstants.defaultIncomeCategories.length; i++) {
+      final category = Category(
+        id: 'income_${i + 1}',
+        name: AppConstants.defaultIncomeCategories[i],
+        type: CategoryType.income,
+      );
+      await categoryBox.put(category.id, category);
+    }
+    
+    // Add default donation categories with translation keys
+    for (int i = 0; i < AppConstants.defaultDonationCategories.length; i++) {
+      final category = Category(
+        id: 'donation_${i + 1}',
+        name: AppConstants.defaultDonationCategories[i],
+        type: CategoryType.donation,
+      );
+      await categoryBox.put(category.id, category);
+    }
+  }
+  
+  static Future<void> _migrateCategoryNames() async {
+    final categoryBox = Hive.box<Category>(AppConstants.categoryBoxName);
+    
+    // Migration mapping from old English names to new translation keys
+    final Map<String, String> migrationMap = {
+      // Income categories
+      'Salary': 'salary',
+      'Freelance': 'freelance',
+      'Business': 'business',
+      'Gift': 'gift',
+      'Investment': 'investment',
+      'Other': 'other',
+      // Donation categories
+      'Synagogue': 'synagogue',
+      'Charity Organization': 'charity_organization',
+      'Poor/Needy': 'poor_needy',
+      'Education': 'education',
+      'Healthcare': 'healthcare',
+      'Emergency Relief': 'emergency_relief',
+    };
+    
+    // Update existing categories with translation keys
+    for (final category in categoryBox.values.toList()) {
+      if (migrationMap.containsKey(category.name)) {
+        final updatedCategory = Category(
+          id: category.id,
+          name: migrationMap[category.name]!,
+          type: category.type,
         );
-        await categoryBox.put(category.id, category);
-      }
-      
-      // Add default donation categories
-      for (int i = 0; i < AppConstants.defaultDonationCategories.length; i++) {
-        final category = Category(
-          id: 'donation_${i + 1}',
-          name: AppConstants.defaultDonationCategories[i],
-          type: CategoryType.donation,
-        );
-        await categoryBox.put(category.id, category);
+        await categoryBox.put(category.id, updatedCategory);
       }
     }
   }
